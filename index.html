@@ -16,6 +16,9 @@
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   
+  <!-- Lemon Squeezy Checkout Script -->
+  <script src="https://assets.lemonsqueezy.com/lemon.js" defer></script>
+  
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -969,14 +972,19 @@
       }
     }
 
+    const LEMON_CHECKOUT_URL = "https://crisdl-turbo.lemonsqueezy.com/checkout/buy/6cdece0e-57ad-4809-9390-579aad24b3e0";
+
     function openCheckoutModal() {
-      document.getElementById('checkout-step-form').classList.remove('hidden');
-      document.getElementById('checkout-step-success').classList.add('hidden');
-      document.getElementById('modal-checkout').classList.remove('hidden');
+      if (window.createLemonSqueezyCheckout) {
+        window.createLemonSqueezyCheckout({ url: LEMON_CHECKOUT_URL });
+      } else {
+        window.open(LEMON_CHECKOUT_URL, "_blank");
+      }
     }
 
     function closeCheckoutModal() {
-      document.getElementById('modal-checkout').classList.add('hidden');
+      const modal = document.getElementById('modal-checkout');
+      if (modal) modal.classList.add('hidden');
     }
 
     // Lookup Modal
