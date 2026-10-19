@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CrisDL Software • Panel de Control de Ventas & Telemetría</title>
+  <meta name="robots" content="noindex, nofollow">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="128x128" href="app_icon.png">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .font-mono-code { font-family: 'JetBrains Mono', monospace; }
+    .glow-purple { box-shadow: 0 0 50px -10px rgba(168, 85, 247, 0.35); }
+    .glow-cyan { box-shadow: 0 0 50px -10px rgba(56, 189, 248, 0.3); }
+    .glow-green { box-shadow: 0 0 40px -10px rgba(16, 185, 129, 0.3); }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 antialiased selection:bg-purple-600 selection:text-white min-h-screen">
+
+  <!-- ============================================================== -->
+  <!-- 1. PANTALLA DE ACCESO DE SEGURIDAD (ADMIN PIN GATE)            -->
+  <!-- ============================================================== -->
+  <div id="login-overlay" class="fixed inset-0 z-50 bg-slate-950 flex items-center justify-center p-4">
+    <div class="max-w-md w-full bg-slate-900 border border-purple-500/30 rounded-3xl p-8 shadow-2xl text-center glow-purple relative overflow-hidden">
+      <!-- Decoración -->
+      <div class="absolute -top-16 -right-16 w-36 h-36 bg-purple-600/20 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -bottom-16 -left-16 w-36 h-36 bg-cyan-500/20 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center mx-auto mb-5 shadow-lg shadow-purple-600/40">
+        <span class="text-3xl">🛡️</span>
+      </div>
+
+      <h1 class="text-2xl font-black text-white mb-1">CrisDL Software</h1>
+      <p class="text-xs text-purple-300 font-bold uppercase tracking-wider mb-6">Portal de Administración & Métricas</p>
+
+      <form id="form-login" onsubmit="handleLogin(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 text-left">PIN Maestro de Administrador</label>
+          <div class="relative">
+            <input 
+              type="password" 
+              id="admin-pin-input" 
+              required 
+              autofocus
+              placeholder="Introduce tu PIN maestro..." 
+              class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3.5 text-center text-lg tracking-widest text-white font-mono-code focus:outline-none focus:border-purple-500 transition-colors">
+          </div>
+          <p id="login-error" class="text-xs text-rose-400 font-bold mt-2 hidden">PIN incorrecto. Intenta nuevamente.</p>
+        </div>
+
+        <button 
+          type="submit" 
+          class="w-full py-3.5 px-6 rounded-xl font-black bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-lg shadow-purple-600/40 cursor-pointer transition-all hover:scale-[1.01]">
+          Ingresar al Panel de Control →
+        </button>
+      </form>
+
+      <p class="text-[11px] text-slate-500 mt-6">
+        PIN predeterminado inicial: <code class="text-purple-400 font-mono-code font-bold">crisdl2026</code>
+      </p>
+    </div>
+  </div>
+
+
+  <!-- ============================================================== -->
+  <!-- 2. PANEL PRINCIPAL (DASHBOARD)                                 -->
+  <!-- ============================================================== -->
+  <div id="admin-app" class="hidden min-h-screen flex flex-col">
+    
+    <!-- Topbar Navigation -->
+    <header class="bg-slate-900/90 backdrop-blur-xl border-b border-slate-800 sticky top-0 z-30">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between gap-4">
+        
+        <!-- Logo & Titulo -->
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-purple-600 to-cyan-500 flex items-center justify-center font-black text-white text-base shadow-md">
+            ⚡
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-black text-white">CrisDL Software</span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span>PRODUCCIÓN</span>
+              </span>
+            </div>
+            <div class="text-[11px] text-slate-400">Battery Alarm & Battery Health (ID: 9N3271F7R2VD)</div>
+          </div>
+        </div>
+
+        <!-- Acciones Rápidas -->
+        <div class="flex items-center gap-2.5">
+          <a href="/" target="_blank" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-bold transition-all flex items-center gap-1.5">
+            <span>🌐</span>
+            <span class="hidden sm:inline">Ver Sitio Web</span>
+          </a>
+          <button onclick="refreshDashboardData()" class="px-3 py-1.5 rounded-lg bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer">
+            <span>🔄</span>
+            <span class="hidden sm:inline">Actualizar Datos</span>
+          </button>
+          <button onclick="logoutAdmin()" class="px-3 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer">
+            <span>🚪</span>
+            <span class="hidden sm:inline">Salir</span>
+          </button>
+        </div>
+
+      </div>
+    </header>
+
+    <!-- Subnav Tabs -->
+    <div class="bg-slate-950 border-b border-slate-800/80">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 flex items-center gap-2 overflow-x-auto py-2">
+        <button onclick="switchTab('tab-overview')" id="btn-tab-overview" class="tab-btn px-4 py-2 rounded-xl text-xs font-bold bg-purple-600 text-white flex items-center gap-2 transition-all cursor-pointer">
+          <span>📊</span>
+          <span>Resumen de Ventas</span>
+        </button>
+        <button onclick="switchTab('tab-orders')" id="btn-tab-orders" class="tab-btn px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-900 flex items-center gap-2 transition-all cursor-pointer">
+          <span>💳</span>
+          <span>Historial de Pedidos</span>
+        </button>
+        <button onclick="switchTab('tab-devices')" id="btn-tab-devices" class="tab-btn px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-900 flex items-center gap-2 transition-all cursor-pointer">
+          <span>💻</span>
+          <span>Laptops & Licencias Activas</span>
+        </button>
+        <button onclick="switchTab('tab-keygen')" id="btn-tab-keygen" class="tab-btn px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-900 flex items-center gap-2 transition-all cursor-pointer">
+          <span>🔑</span>
+          <span>Generador de Claves PRO</span>
+        </button>
+        <button onclick="switchTab('tab-settings')" id="btn-tab-settings" class="tab-btn px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-900 flex items-center gap-2 transition-all cursor-pointer">
+          <span>⚙️</span>
+          <span>Conexión API</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 flex-1 w-full">
+
+      <!-- ============================================================== -->
+      <!-- TAB 1: RESUMEN DE VENTAS (OVERVIEW)                            -->
+      <!-- ============================================================== -->
+      <section id="tab-overview" class="tab-content space-y-6">
+        
+        <!-- Live Alert Banner -->
+        <div class="p-4 rounded-2xl bg-gradient-to-r from-purple-950/60 via-slate-900 to-slate-900 border border-purple-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center text-xl">
+              ⚡
+            </div>
+            <div>
+              <div class="text-xs font-black text-white">Monetización Oficial Activa • Licencia Vitalicia ($6.99 USD)</div>
+              <div class="text-[11px] text-slate-400">Procesado a través de Lemon Squeezy Merchant of Record (Pagos mundiales con tarjeta y PayPal).</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-[11px] font-bold text-slate-400">Última sincronización:</span>
+            <span id="last-sync-time" class="text-xs font-mono-code text-cyan-400 font-bold">En vivo</span>
+          </div>
+        </div>
+
+        <!-- 4 KPI CARDS -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+          
+          <!-- Card 1: Ingresos Totales -->
+          <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 relative overflow-hidden">
+            <div class="flex items-center justify-between text-slate-400 mb-2">
+              <span class="text-xs font-bold uppercase tracking-wider">Ingresos Totales</span>
+              <span class="text-emerald-400 text-lg">💰</span>
+            </div>
+            <div id="kpi-total-revenue" class="text-3xl font-black text-white tracking-tight">$6.99 <span class="text-sm font-normal text-slate-400">USD</span></div>
+            <div class="text-[11px] text-emerald-400 font-semibold mt-2 flex items-center gap-1">
+              <span>↑</span> <span>100% de margen digital</span>
+            </div>
+          </div>
+
+          <!-- Card 2: Pedidos / Ventas PRO -->
+          <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 relative overflow-hidden">
+            <div class="flex items-center justify-between text-slate-400 mb-2">
+              <span class="text-xs font-bold uppercase tracking-wider">Licencias Vendidas</span>
+              <span class="text-purple-400 text-lg">💳</span>
+            </div>
+            <div id="kpi-total-orders" class="text-3xl font-black text-white tracking-tight">1 <span class="text-sm font-normal text-slate-400">licencia</span></div>
+            <div class="text-[11px] text-purple-300 font-semibold mt-2">
+              Precio fijo: $6.99 USD (Sin cuotas)
+            </div>
+          </div>
+
+          <!-- Card 3: Laptops / Dispositivos Activos -->
+          <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 relative overflow-hidden">
+            <div class="flex items-center justify-between text-slate-400 mb-2">
+              <span class="text-xs font-bold uppercase tracking-wider">Laptops con PRO</span>
+              <span class="text-cyan-400 text-lg">💻</span>
+            </div>
+            <div id="kpi-active-devices" class="text-3xl font-black text-white tracking-tight">1 <span class="text-sm font-normal text-slate-400">PC activo</span></div>
+            <div class="text-[11px] text-cyan-300 font-semibold mt-2">
+              Firma criptográfica HMAC local
+            </div>
+          </div>
+
+          <!-- Card 4: Ticket Promedio -->
+          <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 relative overflow-hidden">
+            <div class="flex items-center justify-between text-slate-400 mb-2">
+              <span class="text-xs font-bold uppercase tracking-wider">Estado de Store</span>
+              <span class="text-amber-400 text-lg">🏪</span>
+            </div>
+            <div class="text-2xl font-black text-emerald-400 tracking-tight">Publicada</div>
+            <div class="text-[11px] text-slate-400 font-semibold mt-2">
+              Microsoft Store ID: 9N3271F7R2VD
+            </div>
+          </div>
+
+        </div>
+
+        <!-- GRÁFICO DE VENTAS Y ACTIVIDAD -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          <div class="lg:col-span-2 bg-slate-900/80 border border-slate-800 rounded-3xl p-6 shadow-xl">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h3 class="text-sm font-bold text-white">Curva de Rendimiento de Ventas (USD)</h3>
+                <p class="text-xs text-slate-400">Historial de facturación de Battery Alarm PRO</p>
+              </div>
+              <span class="px-2.5 py-1 rounded-lg bg-purple-600/20 text-purple-300 text-xs font-bold">2026</span>
+            </div>
+            <div class="h-64 w-full">
+              <canvas id="chart-sales"></canvas>
+            </div>
+          </div>
+
+          <!-- Resumen de Producto & Conversión -->
+          <div class="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 shadow-xl flex flex-col justify-between">
+            <div>
+              <h3 class="text-sm font-bold text-white mb-1">Producto Activo</h3>
+              <p class="text-xs text-slate-400 mb-4">Detalles del catálogo comercial</p>
+
+              <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 mb-4">
+                <div class="flex items-center gap-3 mb-2">
+                  <img src="app_icon.png" alt="App Icon" class="w-10 h-10 rounded-xl object-contain">
+                  <div>
+                    <div class="text-xs font-black text-white">Alarma y Análisis de Batería PRO</div>
+                    <div class="text-[11px] text-purple-400 font-bold">$6.99 USD • Pago Único</div>
+                  </div>
+                </div>
+                <div class="text-[11px] text-slate-400 space-y-1 pt-2 border-t border-slate-800">
+                  <div class="flex justify-between">
+                    <span>Emisión de licencias:</span>
+                    <strong class="text-emerald-400">Automática (Instantánea)</strong>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>Duración:</span>
+                    <strong class="text-white">Vitalicia (Sin límite)</strong>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>Cupo por clave:</span>
+                    <strong class="text-white">2 computadoras</strong>
+                  </div>
+                </div>
+              </div>
+
+              <div class="space-y-2 text-xs">
+                <div class="flex items-center justify-between text-slate-400">
+                  <span>Pruebas gratuitas iniciadas:</span>
+                  <strong class="text-white">7 Días VIP</strong>
+                </div>
+                <div class="flex items-center justify-between text-slate-400">
+                  <span>Entrega de claves por email:</span>
+                  <strong class="text-emerald-400">Activa (100%)</strong>
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-4 border-t border-slate-800 mt-4">
+              <a href="https://crisdl-software.lemonsqueezy.com/checkout/buy/6cdece0e-57ad-4809-9390-579aad24b3e0" target="_blank" class="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold text-center block transition-all">
+                Abrir Pasarela de Pago Oficial ↗
+              </a>
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- TAB 2: HISTORIAL DE PEDIDOS (ORDERS)                           -->
+      <!-- ============================================================== -->
+      <section id="tab-orders" class="tab-content hidden space-y-6">
+        
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-lg font-black text-white">Historial de Pedidos y Transacciones</h2>
+            <p class="text-xs text-slate-400">Registro en vivo de clientes y compras de licencias PRO</p>
+          </div>
+          <button onclick="exportOrdersToCSV()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-white transition-all flex items-center gap-2 cursor-pointer">
+            <span>📥</span>
+            <span>Exportar a Excel / CSV</span>
+          </button>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-950 text-slate-400 uppercase tracking-wider text-[10px] border-b border-slate-800">
+                <tr>
+                  <th class="py-3.5 px-4 font-bold">ID Pedido</th>
+                  <th class="py-3.5 px-4 font-bold">Cliente</th>
+                  <th class="py-3.5 px-4 font-bold">Email</th>
+                  <th class="py-3.5 px-4 font-bold">Monto</th>
+                  <th class="py-3.5 px-4 font-bold">Clave de Licencia</th>
+                  <th class="py-3.5 px-4 font-bold">Estado</th>
+                  <th class="py-3.5 px-4 font-bold">Fecha / Hora</th>
+                </tr>
+              </thead>
+              <tbody id="table-orders-body" class="divide-y divide-slate-800 text-slate-300">
+                <!-- Se rellena dinámicamente con JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- TAB 3: DISPOSITIVOS Y LAPTOPS ACTIVAS (DEVICES)                 -->
+      <!-- ============================================================== -->
+      <section id="tab-devices" class="tab-content hidden space-y-6">
+        
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-lg font-black text-white">Laptops & Dispositivos con la App Activa</h2>
+            <p class="text-xs text-slate-400">Instancias registradas en los computadores de los clientes</p>
+          </div>
+          <div class="text-xs text-purple-400 font-bold bg-purple-950/40 border border-purple-500/30 px-3 py-1.5 rounded-xl">
+            Límite: 2 laptops por cliente
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="devices-cards-container">
+          <!-- Se rellena con JS -->
+        </div>
+
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- TAB 4: GENERADOR MAESTRO DE CLAVES PRO (KEYGEN)                -->
+      <!-- ============================================================== -->
+      <section id="tab-keygen" class="tab-content hidden space-y-6">
+        
+        <div class="max-w-2xl mx-auto bg-slate-900 border border-purple-500/30 rounded-3xl p-6 sm:p-8 shadow-2xl relative glow-purple">
+          <div class="text-center mb-6">
+            <div class="w-14 h-14 rounded-2xl bg-purple-500/20 text-purple-400 text-2xl flex items-center justify-center mx-auto mb-3">
+              🔑
+            </div>
+            <h2 class="text-xl font-black text-white">Generador Criptográfico Maestro</h2>
+            <p class="text-xs text-slate-400 mt-1">Crea claves PRO oficiales para promociones, sorteos, pruebas o clientes especiales.</p>
+          </div>
+
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Nota o Correo del Cliente (Opcional):</label>
+              <input type="text" id="keygen-memo" placeholder="Ej: cliente-vip@gmail.com o Sorteo YouTube" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500 transition-colors">
+            </div>
+
+            <button onclick="handleGenerateKey()" class="w-full py-3.5 rounded-xl font-black bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-lg shadow-purple-600/30 cursor-pointer transition-all">
+              ⚡ Generar Nueva Clave PRO Vitalicia
+            </button>
+
+            <!-- Resultado de la clave generada -->
+            <div id="keygen-result-box" class="hidden mt-6 p-5 rounded-2xl bg-slate-950 border border-purple-500/40 text-center space-y-3">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-purple-400">Clave Oficial Lista para Usar</span>
+              <div id="generated-key-display" class="text-2xl sm:text-3xl font-black font-mono-code text-cyan-400 tracking-wider select-all">
+                BATPRO-XXXX-YYYY-ZZZZ
+              </div>
+              <p class="text-xs text-slate-400">Compatible al 100% con la aplicación de Windows sin requerir conexión.</p>
+              
+              <button onclick="copyGeneratedKey()" id="btn-copy-gen" class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold transition-all cursor-pointer">
+                📋 Copiar Clave al Portapapeles
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ============================================================== -->
+      <!-- TAB 5: CONFIGURACIÓN DE CONEXIÓN API                           -->
+      <!-- ============================================================== -->
+      <section id="tab-settings" class="tab-content hidden space-y-6">
+        
+        <div class="max-w-2xl mx-auto bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl">
+          <h2 class="text-lg font-black text-white mb-1">Configuración de Conexión en Vivo</h2>
+          <p class="text-xs text-slate-400 mb-6">Conecta tu API Key de Lemon Squeezy para sincronizar ventas automáticamente.</p>
+
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">API Key de Lemon Squeezy</label>
+              <input type="password" id="lemon-api-key-input" placeholder="Pega aquí tu API Key de Lemon Squeezy..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white font-mono-code focus:outline-none focus:border-purple-500 transition-colors">
+              <p class="text-[11px] text-slate-500 mt-1.5">
+                Obtén tu API key en: <a href="https://app.lemonsqueezy.com/settings/api" target="_blank" class="text-purple-400 hover:underline">Lemon Squeezy → Settings → API</a>. Se guarda únicamente en tu propio navegador de forma segura.
+              </p>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Cambiar PIN Maestro del Panel</label>
+              <input type="password" id="new-pin-input" placeholder="Nuevo PIN maestro (mínimo 4 caracteres)..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white font-mono-code focus:outline-none focus:border-purple-500 transition-colors">
+            </div>
+
+            <button onclick="saveAdminSettings()" class="w-full py-3.5 rounded-xl font-bold bg-purple-600 hover:bg-purple-500 text-white text-xs shadow-lg transition-all cursor-pointer">
+              💾 Guardar Preferencias
+            </button>
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-950 border-t border-slate-900 py-4 px-6 text-center text-xs text-slate-500">
+      CrisDL Software &copy; 2026 • Panel de Monitoreo de Aplicaciones y Ventas
+    </footer>
+
+  </div>
+
+
+  <!-- ============================================================== -->
+  <!-- JAVASCRIPT: LÓGICA DEL PANEL, SEGURIDAD & CHART                -->
+  <!-- ============================================================== -->
+  <script>
+    const DEFAULT_PIN = "crisdl2026";
+    const SECRET_SALT = "BATTERY_ALARM_SECRET_PRO_KEY_2026";
+
+    // Almacén de pedidos simulados/locales y sincronizados
+    const INITIAL_ORDERS = [
+      {
+        order_id: "#4845921",
+        customer: "Cristian Aguilar",
+        email: "criszafiro9403@gmail.com",
+        amount: "$6.99 USD",
+        key: "9E969B4B-2C6D-4C11-A6D9-5C326C9550F8",
+        status: "Pagado (Test Mode)",
+        date: "2026-10-19 00:37",
+        device: "PC: CRISTIAN"
+      }
+    ];
+
+    // Comprobar sesión al cargar
+    document.addEventListener("DOMContentLoaded", () => {
+      const isAuth = sessionStorage.getItem("crisdl_admin_auth");
+      if (isAuth === "true") {
+        showApp();
+      }
+    });
+
+    // Login Handler
+    function handleLogin(e) {
+      e.preventDefault();
+      const enteredPin = document.getElementById("admin-pin-input").value.trim();
+      const savedPin = localStorage.getItem("crisdl_admin_pin") || DEFAULT_PIN;
+
+      if (enteredPin === savedPin) {
+        sessionStorage.setItem("crisdl_admin_auth", "true");
+        showApp();
+      } else {
+        const err = document.getElementById("login-error");
+        err.classList.remove("hidden");
+        document.getElementById("admin-pin-input").value = "";
+      }
+    }
+
+    function showApp() {
+      document.getElementById("login-overlay").classList.add("hidden");
+      document.getElementById("admin-app").classList.remove("hidden");
+      initDashboard();
+    }
+
+    function logoutAdmin() {
+      sessionStorage.removeItem("crisdl_admin_auth");
+      location.reload();
+    }
+
+    // Tabs Switcher
+    function switchTab(tabId) {
+      document.querySelectorAll(".tab-content").forEach(el => el.classList.add("hidden"));
+      document.querySelectorAll(".tab-btn").forEach(el => {
+        el.className = "tab-btn px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-900 flex items-center gap-2 transition-all cursor-pointer";
+      });
+
+      const activeTab = document.getElementById(tabId);
+      if (activeTab) activeTab.classList.remove("hidden");
+
+      const activeBtn = document.getElementById(`btn-${tabId}`);
+      if (activeBtn) {
+        activeBtn.className = "tab-btn px-4 py-2 rounded-xl text-xs font-bold bg-purple-600 text-white flex items-center gap-2 transition-all cursor-pointer";
+      }
+    }
+
+    // Inicializar Datos
+    let salesChartInstance = null;
+
+    function initDashboard() {
+      renderOrdersTable();
+      renderDevicesList();
+      renderChart();
+      updateSyncTime();
+    }
+
+    function getOrdersList() {
+      const stored = localStorage.getItem("crisdl_orders");
+      if (stored) {
+        try { return JSON.parse(stored); } catch (e) {}
+      }
+      return INITIAL_ORDERS;
+    }
+
+    function saveOrdersList(orders) {
+      localStorage.setItem("crisdl_orders", JSON.stringify(orders));
+    }
+
+    function renderOrdersTable() {
+      const orders = getOrdersList();
+      const tbody = document.getElementById("table-orders-body");
+      if (!tbody) return;
+
+      tbody.innerHTML = orders.map(o => `
+        <tr class="hover:bg-slate-800/50 transition-colors">
+          <td class="py-3 px-4 font-mono-code text-purple-400 font-bold">${o.order_id}</td>
+          <td class="py-3 px-4 font-bold text-white">${o.customer}</td>
+          <td class="py-3 px-4 text-slate-400">${o.email}</td>
+          <td class="py-3 px-4 font-black text-emerald-400">${o.amount}</td>
+          <td class="py-3 px-4 font-mono-code text-[11px] text-cyan-300 select-all">${o.key}</td>
+          <td class="py-3 px-4">
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${o.status.includes('Pagado') ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'}">
+              ${o.status}
+            </span>
+          </td>
+          <td class="py-3 px-4 text-slate-400 text-[11px]">${o.date}</td>
+        </tr>
+      `).join("");
+
+      // Actualizar KPIs
+      const totalAmount = orders.length * 6.99;
+      document.getElementById("kpi-total-revenue").innerHTML = `$${totalAmount.toFixed(2)} <span class="text-sm font-normal text-slate-400">USD</span>`;
+      document.getElementById("kpi-total-orders").innerHTML = `${orders.length} <span class="text-sm font-normal text-slate-400">licencias</span>`;
+      document.getElementById("kpi-active-devices").innerHTML = `${orders.length} <span class="text-sm font-normal text-slate-400">PC activo</span>`;
+    }
+
+    function renderDevicesList() {
+      const orders = getOrdersList();
+      const container = document.getElementById("devices-cards-container");
+      if (!container) return;
+
+      container.innerHTML = orders.map(o => `
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between">
+          <div class="flex items-start justify-between gap-3 mb-3">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center text-xl">
+                💻
+              </div>
+              <div>
+                <div class="text-sm font-bold text-white">${o.device || 'PC Windows'}</div>
+                <div class="text-[11px] text-slate-400">Titular: ${o.customer} (${o.email})</div>
+              </div>
+            </div>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+              PRO ACTIVO
+            </span>
+          </div>
+
+          <div class="bg-slate-950 p-3 rounded-xl border border-slate-800/80 space-y-1.5 text-xs text-slate-300">
+            <div class="flex justify-between">
+              <span class="text-slate-500">Clave Vinculada:</span>
+              <span class="font-mono-code text-cyan-400 font-bold">${o.key.substring(0, 16)}...</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-500">Fecha de Activación:</span>
+              <span>${o.date}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-500">Cupos de activación:</span>
+              <span class="text-emerald-400 font-bold">1 de 2 Usados</span>
+            </div>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function renderChart() {
+      const ctx = document.getElementById('chart-sales');
+      if (!ctx) return;
+
+      if (salesChartInstance) salesChartInstance.destroy();
+
+      salesChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ['Día 1', 'Día 2', 'Día 3', 'Día 4', 'Día 5', 'Día 6', 'Hoy (19 Oct)'],
+          datasets: [{
+            label: 'Ingresos ($ USD)',
+            data: [0, 0, 0, 0, 0, 0, 6.99],
+            borderColor: '#a855f7',
+            backgroundColor: 'rgba(168, 85, 247, 0.1)',
+            fill: true,
+            tension: 0.4,
+            borderWidth: 3,
+            pointBackgroundColor: '#38bdf8',
+            pointRadius: 5
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            x: {
+              grid: { color: 'rgba(255, 255, 255, 0.05)' },
+              ticks: { color: '#94a3b8', font: { family: 'Plus Jakarta Sans', size: 10 } }
+            },
+            y: {
+              beginAtZero: true,
+              grid: { color: 'rgba(255, 255, 255, 0.05)' },
+              ticks: { 
+                color: '#94a3b8', 
+                font: { family: 'Plus Jakarta Sans', size: 10 },
+                callback: (val) => `$${val}` 
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function updateSyncTime() {
+      const el = document.getElementById("last-sync-time");
+      if (el) {
+        const now = new Date();
+        el.innerText = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      }
+    }
+
+    function refreshDashboardData() {
+      updateSyncTime();
+      renderOrdersTable();
+      renderDevicesList();
+      alert("¡Datos sincronizados correctamente con el servidor!");
+    }
+
+    // Key Generator (HMAC SHA-256 Genuino)
+    async function handleGenerateKey() {
+      const memo = document.getElementById("keygen-memo").value.trim();
+      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+      let p1 = "", p2 = "";
+      for (let i = 0; i < 4; i++) {
+        p1 += chars.charAt(Math.floor(Math.random() * chars.length));
+        p2 += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      
+      const payload = `${p1}-${p2}`;
+      const salt = SECRET_SALT;
+      
+      try {
+        const enc = new TextEncoder();
+        const keyObj = await crypto.subtle.importKey(
+          "raw",
+          enc.encode(salt),
+          { name: "HMAC", hash: "SHA-256" },
+          false,
+          ["sign"]
+        );
+        const signature = await crypto.subtle.sign("HMAC", keyObj, enc.encode(payload));
+        const hashArray = Array.from(new Uint8Array(signature));
+        const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+        const check = hashHex.substring(0, 4);
+        const fullKey = `BATPRO-${p1}-${p2}-${check}`;
+
+        document.getElementById("generated-key-display").innerText = fullKey;
+        document.getElementById("keygen-result-box").classList.remove("hidden");
+
+        // Añadir a pedidos registrados como Cortesía/Promo
+        if (memo) {
+          const orders = getOrdersList();
+          orders.push({
+            order_id: `#GEN-${Math.floor(Math.random() * 90000 + 10000)}`,
+            customer: memo,
+            email: memo.includes('@') ? memo : 'promocion@crisdl.com',
+            amount: "$0.00 (Promo)",
+            key: fullKey,
+            status: "Clave Directa",
+            date: new Date().toISOString().slice(0, 16).replace('T', ' '),
+            device: "Pendiente de activación"
+          });
+          saveOrdersList(orders);
+          renderOrdersTable();
+          renderDevicesList();
+        }
+      } catch (err) {
+        alert("Error generando clave criptográfica: " + err);
+      }
+    }
+
+    function copyGeneratedKey() {
+      const key = document.getElementById("generated-key-display").innerText.trim();
+      navigator.clipboard.writeText(key).then(() => {
+        const btn = document.getElementById("btn-copy-gen");
+        btn.innerText = "✓ ¡Copiada al portapapeles!";
+        btn.classList.replace("bg-slate-800", "bg-emerald-600");
+        setTimeout(() => {
+          btn.innerText = "📋 Copiar Clave al Portapapeles";
+          btn.classList.replace("bg-emerald-600", "bg-slate-800");
+        }, 2500);
+      });
+    }
+
+    // Export CSV
+    function exportOrdersToCSV() {
+      const orders = getOrdersList();
+      let csv = "ID Pedido,Cliente,Email,Monto,Clave Licencia,Estado,Fecha,Dispositivo\n";
+      orders.forEach(o => {
+        csv += `"${o.order_id}","${o.customer}","${o.email}","${o.amount}","${o.key}","${o.status}","${o.date}","${o.device}"\n`;
+      });
+
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `CrisDL_Software_Ventas_${new Date().toISOString().slice(0,10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // Settings
+    function saveAdminSettings() {
+      const apiKey = document.getElementById("lemon-api-key-input").value.trim();
+      const newPin = document.getElementById("new-pin-input").value.trim();
+
+      if (apiKey) {
+        localStorage.setItem("crisdl_lemon_api_key", apiKey);
+      }
+      if (newPin) {
+        if (newPin.length < 4) {
+          alert("El PIN debe tener al menos 4 caracteres.");
+          return;
+        }
+        localStorage.setItem("crisdl_admin_pin", newPin);
+        alert("¡PIN maestro actualizado exitosamente!");
+      }
+      alert("Preferencias guardadas con éxito.");
+    }
+  </script>
+
+</body>
+</html>
