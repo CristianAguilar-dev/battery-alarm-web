@@ -181,7 +181,7 @@
               <span class="text-xs font-bold uppercase tracking-wider">Ingresos Totales</span>
               <span class="text-emerald-400 text-lg">💰</span>
             </div>
-            <div id="kpi-total-revenue" class="text-3xl font-black text-white tracking-tight">$6.99 <span class="text-sm font-normal text-slate-400">USD</span></div>
+            <div id="kpi-total-revenue" class="text-3xl font-black text-white tracking-tight">$0.00 <span class="text-sm font-normal text-slate-400">USD</span></div>
             <div class="text-[11px] text-emerald-400 font-semibold mt-2 flex items-center gap-1">
               <span>↑</span> <span>100% de margen digital</span>
             </div>
@@ -193,7 +193,7 @@
               <span class="text-xs font-bold uppercase tracking-wider">Licencias Vendidas</span>
               <span class="text-purple-400 text-lg">💳</span>
             </div>
-            <div id="kpi-total-orders" class="text-3xl font-black text-white tracking-tight">1 <span class="text-sm font-normal text-slate-400">licencia</span></div>
+            <div id="kpi-total-orders" class="text-3xl font-black text-white tracking-tight">0 <span class="text-sm font-normal text-slate-400">licencias</span></div>
             <div class="text-[11px] text-purple-300 font-semibold mt-2">
               Precio fijo: $6.99 USD (Sin cuotas)
             </div>
@@ -205,7 +205,7 @@
               <span class="text-xs font-bold uppercase tracking-wider">Laptops con PRO</span>
               <span class="text-cyan-400 text-lg">💻</span>
             </div>
-            <div id="kpi-active-devices" class="text-3xl font-black text-white tracking-tight">1 <span class="text-sm font-normal text-slate-400">PC activo</span></div>
+            <div id="kpi-active-devices" class="text-3xl font-black text-white tracking-tight">0 <span class="text-sm font-normal text-slate-400">PCs activos</span></div>
             <div class="text-[11px] text-cyan-300 font-semibold mt-2">
               Firma criptográfica HMAC local
             </div>
@@ -443,22 +443,28 @@
     const DEFAULT_PIN = "crisdl2026";
     const SECRET_SALT = "BATTERY_ALARM_SECRET_PRO_KEY_2026";
 
-    // Almacén de pedidos simulados/locales y sincronizados
-    const INITIAL_ORDERS = [
-      {
-        order_id: "#4845921",
-        customer: "Cristian Aguilar",
-        email: "criszafiro9403@gmail.com",
-        amount: "$6.99 USD",
-        key: "9E969B4B-2C6D-4C11-A6D9-5C326C9550F8",
-        status: "Pagado (Test Mode)",
-        date: "2026-10-19 00:37",
-        device: "PC: CRISTIAN"
+    // Almacén de pedidos sincronizados
+    const INITIAL_ORDERS = [];
+
+    // Limpieza proactiva de la orden de prueba anterior
+    function cleanTestOrders() {
+      const stored = localStorage.getItem("crisdl_orders");
+      if (stored) {
+        try {
+          const list = JSON.parse(stored);
+          if (Array.isArray(list)) {
+            const cleaned = list.filter(o => o.order_id !== "#4845921" && o.customer !== "Cristian Aguilar" && o.email !== "criszafiro9403@gmail.com");
+            if (cleaned.length !== list.length) {
+              localStorage.setItem("crisdl_orders", JSON.stringify(cleaned));
+            }
+          }
+        } catch (e) {}
       }
-    ];
+    }
 
     // Comprobar sesión al cargar
     document.addEventListener("DOMContentLoaded", () => {
+      cleanTestOrders();
       const isAuth = sessionStorage.getItem("crisdl_admin_auth");
       if (isAuth === "true") {
         showApp();
@@ -521,7 +527,12 @@
     function getOrdersList() {
       const stored = localStorage.getItem("crisdl_orders");
       if (stored) {
-        try { return JSON.parse(stored); } catch (e) {}
+        try {
+          const list = JSON.parse(stored);
+          if (Array.isArray(list)) {
+            return list.filter(o => o.order_id !== "#4845921" && o.customer !== "Cristian Aguilar" && o.email !== "criszafiro9403@gmail.com");
+          }
+        } catch (e) {}
       }
       return INITIAL_ORDERS;
     }
@@ -535,33 +546,59 @@
       const tbody = document.getElementById("table-orders-body");
       if (!tbody) return;
 
-      tbody.innerHTML = orders.map(o => `
-        <tr class="hover:bg-slate-800/50 transition-colors">
-          <td class="py-3 px-4 font-mono-code text-purple-400 font-bold">${o.order_id}</td>
-          <td class="py-3 px-4 font-bold text-white">${o.customer}</td>
-          <td class="py-3 px-4 text-slate-400">${o.email}</td>
-          <td class="py-3 px-4 font-black text-emerald-400">${o.amount}</td>
-          <td class="py-3 px-4 font-mono-code text-[11px] text-cyan-300 select-all">${o.key}</td>
-          <td class="py-3 px-4">
-            <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${o.status.includes('Pagado') ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'}">
-              ${o.status}
-            </span>
-          </td>
-          <td class="py-3 px-4 text-slate-400 text-[11px]">${o.date}</td>
-        </tr>
-      `).join("");
+      if (orders.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" class="py-12 text-center text-slate-500">
+              <div class="text-3xl mb-2">📊</div>
+              <div class="text-sm font-bold text-slate-400">Sin pedidos registrados aún</div>
+              <div class="text-xs text-slate-600 mt-1">El contador se actualizará automáticamente con cada nueva compra de tus clientes.</div>
+            </td>
+          </tr>
+        `;
+      } else {
+        tbody.innerHTML = orders.map(o => `
+          <tr class="hover:bg-slate-800/50 transition-colors">
+            <td class="py-3 px-4 font-mono-code text-purple-400 font-bold">${o.order_id}</td>
+            <td class="py-3 px-4 font-bold text-white">${o.customer}</td>
+            <td class="py-3 px-4 text-slate-400">${o.email}</td>
+            <td class="py-3 px-4 font-black text-emerald-400">${o.amount}</td>
+            <td class="py-3 px-4 font-mono-code text-[11px] text-cyan-300 select-all">${o.key}</td>
+            <td class="py-3 px-4">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${o.status.includes('Pagado') ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'}">
+                ${o.status}
+              </span>
+            </td>
+            <td class="py-3 px-4 text-slate-400 text-[11px]">${o.date}</td>
+          </tr>
+        `).join("");
+      }
 
-      // Actualizar KPIs
-      const totalAmount = orders.length * 6.99;
+      // Actualizar KPIs dinámicos
+      const totalAmount = orders.reduce((sum, o) => {
+        const val = parseFloat((o.amount || "0").replace(/[^0-9.]/g, ''));
+        return sum + (isNaN(val) ? 0 : val);
+      }, 0);
       document.getElementById("kpi-total-revenue").innerHTML = `$${totalAmount.toFixed(2)} <span class="text-sm font-normal text-slate-400">USD</span>`;
-      document.getElementById("kpi-total-orders").innerHTML = `${orders.length} <span class="text-sm font-normal text-slate-400">licencias</span>`;
-      document.getElementById("kpi-active-devices").innerHTML = `${orders.length} <span class="text-sm font-normal text-slate-400">PC activo</span>`;
+      document.getElementById("kpi-total-orders").innerHTML = `${orders.length} <span class="text-sm font-normal text-slate-400">${orders.length === 1 ? 'licencia' : 'licencias'}</span>`;
+      document.getElementById("kpi-active-devices").innerHTML = `${orders.length} <span class="text-sm font-normal text-slate-400">${orders.length === 1 ? 'PC activo' : 'PCs activos'}</span>`;
     }
 
     function renderDevicesList() {
       const orders = getOrdersList();
       const container = document.getElementById("devices-cards-container");
       if (!container) return;
+
+      if (orders.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full py-12 text-center text-slate-500 bg-slate-900/50 rounded-2xl border border-slate-800">
+            <div class="text-3xl mb-2">💻</div>
+            <div class="text-sm font-bold text-slate-400">Sin computadores activos registrados</div>
+            <div class="text-xs text-slate-600 mt-1">Las laptops activadas por tus clientes aparecerán aquí automáticamente.</div>
+          </div>
+        `;
+        return;
+      }
 
       container.innerHTML = orders.map(o => `
         <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between">
@@ -604,13 +641,19 @@
 
       if (salesChartInstance) salesChartInstance.destroy();
 
+      const orders = getOrdersList();
+      const total = orders.reduce((sum, o) => {
+        const val = parseFloat((o.amount || "0").replace(/[^0-9.]/g, ''));
+        return sum + (isNaN(val) ? 0 : val);
+      }, 0);
+
       salesChartInstance = new Chart(ctx, {
         type: 'line',
         data: {
-          labels: ['Día 1', 'Día 2', 'Día 3', 'Día 4', 'Día 5', 'Día 6', 'Hoy (19 Oct)'],
+          labels: ['Día 1', 'Día 2', 'Día 3', 'Día 4', 'Día 5', 'Día 6', 'Hoy'],
           datasets: [{
             label: 'Ingresos ($ USD)',
-            data: [0, 0, 0, 0, 0, 0, 6.99],
+            data: [0, 0, 0, 0, 0, 0, total],
             borderColor: '#a855f7',
             backgroundColor: 'rgba(168, 85, 247, 0.1)',
             fill: true,
@@ -654,11 +697,17 @@
     }
 
     function refreshDashboardData() {
+      cleanTestOrders();
       updateSyncTime();
       renderOrdersTable();
       renderDevicesList();
-      alert("¡Datos sincronizados correctamente con el servidor!");
+      renderChart();
     }
+
+    // Actualización automática periódica
+    setInterval(() => {
+      updateSyncTime();
+    }, 15000);
 
     // Key Generator (HMAC SHA-256 Genuino)
     async function handleGenerateKey() {
