@@ -93,9 +93,9 @@
           <div>
             <div class="flex items-center gap-2">
               <span class="text-sm font-black text-white">CrisDL Software</span>
-              <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                <span>PRODUCCIÓN</span>
+              <span id="badge-connection" class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+                <span id="badge-dot" class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span id="badge-connection-text">CONECTANDO...</span>
               </span>
             </div>
             <div class="text-[11px] text-slate-400">Battery Alarm & Battery Health (ID: 9N3271F7R2VD)</div>
@@ -400,26 +400,85 @@
       <!-- ============================================================== -->
       <section id="tab-settings" class="tab-content hidden space-y-6">
         
+        <!-- Tarjeta 1: Webhook en Tiempo Real -->
+        <div class="max-w-2xl mx-auto bg-slate-900 border border-purple-500/30 rounded-3xl p-6 sm:p-8 shadow-xl glow-purple">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center text-xl">
+              ⚡
+            </div>
+            <div>
+              <h2 class="text-base font-black text-white">Receptor de Webhooks en Vivo (Automático)</h2>
+              <p class="text-xs text-slate-400">Cada venta en Lemon Squeezy enviará los datos automáticamente aquí.</p>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Tu URL de Webhook Oficial</label>
+              <div class="flex items-center gap-2">
+                <input type="text" id="webhook-url-display" readonly value="https://battery-alarm-pro.onrender.com/api/webhook" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-xs text-cyan-400 font-mono-code focus:outline-none select-all">
+                <button onclick="copyWebhookUrl()" id="btn-copy-webhook" class="px-4 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold shrink-0 transition-all cursor-pointer">
+                  📋 Copiar
+                </button>
+              </div>
+            </div>
+
+            <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 text-xs text-slate-300 space-y-2">
+              <div class="font-bold text-white flex items-center gap-1.5">
+                <span>📖</span> <span>Cómo activarlo en Lemon Squeezy (30 segundos):</span>
+              </div>
+              <ol class="list-decimal list-inside space-y-1 text-slate-400 pl-1 text-[11px]">
+                <li>Entra en tu cuenta: <a href="https://app.lemonsqueezy.com/settings/webhooks" target="_blank" class="text-purple-400 hover:underline font-bold">Lemon Squeezy → Settings → Webhooks</a></li>
+                <li>Haz clic en el botón superior derecho: <strong>"+ New Webhook"</strong></li>
+                <li>Pega la URL del recuadro de arriba.</li>
+                <li>En <em>Events</em>, marca la casilla: <strong>order_created</strong></li>
+                <li>Haz clic en <strong>Save Webhook</strong>. ¡Listo! Todo queda enlazado.</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tarjeta 2: Sincronización Manual por API Key -->
         <div class="max-w-2xl mx-auto bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl">
-          <h2 class="text-lg font-black text-white mb-1">Configuración de Conexión en Vivo</h2>
-          <p class="text-xs text-slate-400 mb-6">Conecta tu API Key de Lemon Squeezy para sincronizar ventas automáticamente.</p>
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-xl">
+              🔄
+            </div>
+            <div>
+              <h2 class="text-base font-black text-white">Sincronización por API Key</h2>
+              <p class="text-xs text-slate-400">Descarga tu historial completo de ventas directamente de Lemon Squeezy.</p>
+            </div>
+          </div>
 
           <div class="space-y-4">
             <div>
               <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">API Key de Lemon Squeezy</label>
               <input type="password" id="lemon-api-key-input" placeholder="Pega aquí tu API Key de Lemon Squeezy..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white font-mono-code focus:outline-none focus:border-purple-500 transition-colors">
               <p class="text-[11px] text-slate-500 mt-1.5">
-                Obtén tu API key en: <a href="https://app.lemonsqueezy.com/settings/api" target="_blank" class="text-purple-400 hover:underline">Lemon Squeezy → Settings → API</a>. Se guarda únicamente en tu propio navegador de forma segura.
+                Obtén tu API key en: <a href="https://app.lemonsqueezy.com/settings/api" target="_blank" class="text-purple-400 hover:underline">Lemon Squeezy → Settings → API</a>.
               </p>
             </div>
 
+            <button onclick="syncWithLemonSqueezy()" id="btn-sync-api" class="w-full py-3.5 rounded-xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs shadow-lg transition-all cursor-pointer flex items-center justify-center gap-2">
+              <span>⚡</span> <span>Sincronizar Ventas Ahora con Lemon Squeezy</span>
+            </button>
+            <div id="sync-status-msg" class="text-xs text-center font-bold hidden"></div>
+          </div>
+        </div>
+
+        <!-- Tarjeta 3: Seguridad del Panel -->
+        <div class="max-w-2xl mx-auto bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl">
+          <h2 class="text-sm font-black text-white mb-1">Seguridad del Panel de Control</h2>
+          <p class="text-xs text-slate-400 mb-4">Cambia la clave maestra de acceso.</p>
+
+          <div class="space-y-4">
             <div>
-              <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Cambiar PIN Maestro del Panel</label>
+              <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Nuevo PIN Maestro</label>
               <input type="password" id="new-pin-input" placeholder="Nuevo PIN maestro (mínimo 4 caracteres)..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white font-mono-code focus:outline-none focus:border-purple-500 transition-colors">
             </div>
 
-            <button onclick="saveAdminSettings()" class="w-full py-3.5 rounded-xl font-bold bg-purple-600 hover:bg-purple-500 text-white text-xs shadow-lg transition-all cursor-pointer">
-              💾 Guardar Preferencias
+            <button onclick="saveAdminSettings()" class="w-full py-3 rounded-xl font-bold bg-slate-800 hover:bg-slate-700 text-white text-xs border border-slate-700 transition-all cursor-pointer">
+              💾 Guardar PIN
             </button>
           </div>
         </div>
@@ -522,6 +581,43 @@
       renderDevicesList();
       renderChart();
       updateSyncTime();
+      fetchOrdersFromServer();
+    }
+
+    function setConnectionBadge(isLive) {
+      const badge = document.getElementById("badge-connection");
+      const dot = document.getElementById("badge-dot");
+      const text = document.getElementById("badge-connection-text");
+      if (!badge || !text) return;
+
+      if (isLive) {
+        badge.className = "px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1";
+        if (dot) dot.className = "w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse";
+        text.innerText = "EN VIVO (WEBHOOK ACTIVO)";
+      } else {
+        badge.className = "px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 flex items-center gap-1";
+        if (dot) dot.className = "w-1.5 h-1.5 rounded-full bg-cyan-400";
+        text.innerText = "PANEL OFICIAL";
+      }
+    }
+
+    async function fetchOrdersFromServer() {
+      try {
+        const resp = await fetch("/api/orders");
+        if (resp.ok) {
+          const data = await resp.json();
+          if (data && data.success && Array.isArray(data.orders)) {
+            // Guardar localmente
+            localStorage.setItem("crisdl_orders", JSON.stringify(data.orders));
+            renderOrdersTable();
+            renderDevicesList();
+            renderChart();
+            setConnectionBadge(true);
+            return;
+          }
+        }
+      } catch (err) {}
+      setConnectionBadge(false);
     }
 
     function getOrdersList() {
@@ -791,6 +887,85 @@
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+    }
+
+    // Copiar URL de Webhook
+    function copyWebhookUrl() {
+      const el = document.getElementById("webhook-url-display");
+      const url = el ? el.value : "https://battery-alarm-pro.onrender.com/api/webhook";
+      navigator.clipboard.writeText(url).then(() => {
+        const btn = document.getElementById("btn-copy-webhook");
+        if (btn) {
+          btn.innerText = "✓ ¡Copiado!";
+          btn.classList.replace("bg-slate-800", "bg-emerald-600");
+          setTimeout(() => {
+            btn.innerText = "📋 Copiar";
+            btn.classList.replace("bg-emerald-600", "bg-slate-800");
+          }, 2500);
+        }
+      });
+    }
+
+    // Sincronizar manualmente con Lemon Squeezy vía Backend
+    async function syncWithLemonSqueezy() {
+      const btn = document.getElementById("btn-sync-api");
+      const msg = document.getElementById("sync-status-msg");
+      const input = document.getElementById("lemon-api-key-input");
+      const apiKey = input ? input.value.trim() : localStorage.getItem("crisdl_lemon_api_key");
+
+      if (!apiKey) {
+        alert("Por favor introduce tu API Key de Lemon Squeezy en la casilla.");
+        if (input) input.focus();
+        return;
+      }
+
+      localStorage.setItem("crisdl_lemon_api_key", apiKey);
+
+      if (btn) {
+        btn.disabled = true;
+        btn.innerText = "⏳ Conectando con Lemon Squeezy...";
+      }
+      if (msg) msg.classList.add("hidden");
+
+      try {
+        const resp = await fetch("/api/sync-lemon", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ api_key: apiKey })
+        });
+        const data = await resp.json();
+
+        if (resp.ok && data.success) {
+          if (Array.isArray(data.orders)) {
+            localStorage.setItem("crisdl_orders", JSON.stringify(data.orders));
+            renderOrdersTable();
+            renderDevicesList();
+            renderChart();
+          }
+          if (msg) {
+            msg.innerText = `✓ ${data.message || 'Sincronizado exitosamente'}`;
+            msg.className = "text-xs text-center font-bold text-emerald-400 mt-2 block";
+          }
+          alert(`¡Sincronización completada con éxito!`);
+        } else {
+          if (msg) {
+            msg.innerText = `✗ ${data.message || 'Error sincronizando'}`;
+            msg.className = "text-xs text-center font-bold text-rose-400 mt-2 block";
+          }
+          alert(data.message || "No se pudo sincronizar.");
+        }
+      } catch (err) {
+        if (msg) {
+          msg.innerText = `Para sincronización automática en vivo con Webhooks, el backend debe estar activo.`;
+          msg.className = "text-xs text-center font-bold text-amber-400 mt-2 block";
+        }
+        alert("Aviso: El Webhook de Lemon Squeezy se sincronizará automáticamente tan pronto actives el Web Service.");
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = `<span>⚡</span> <span>Sincronizar Ventas Ahora con Lemon Squeezy</span>`;
+        }
+      }
     }
 
     // Settings
