@@ -79,7 +79,7 @@ def logo():
 
 @app.route("/store")
 def store_redirect():
-    return redirect("ms-windows-store://pdp/?productid=9N3271F7R2VD")
+    return redirect("ms-windows-store://pdp/?productid=9N32Z1F7R2VD")
 
 # =====================================================================
 # API: CONSULTA DE PEDIDOS Y ESTADO
