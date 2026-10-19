@@ -146,6 +146,11 @@
             <div class="text-base sm:text-xl font-black" data-i18n="cta_main_btn">Comprar Licencia PRO ($6.99 USD)</div>
           </div>
         </a>
+        <!-- Aviso destacado de entrega por correo -->
+        <div class="mt-4 p-3.5 rounded-2xl bg-slate-900/90 border border-purple-500/30 text-xs text-purple-200 flex items-center justify-center gap-2.5 max-w-xl mx-auto shadow-lg">
+          <span class="text-lg">📬</span>
+          <span data-i18n="hero_email_notice"><strong>¿Cómo recibes tu clave?</strong> Se muestra al pagar y <strong>se envía al instante a tu correo electrónico</strong> (revisa también tu carpeta de Spam / Correo no deseado).</span>
+        </div>
       </div>
 
       <!-- Trust Pillars -->
@@ -573,6 +578,39 @@
 
 
   <!-- ============================================================== -->
+  <!-- MODAL: CONFIRMACIÓN POST-COMPRA (AVISO DE REVISAR CORREO)      -->
+  <!-- ============================================================== -->
+  <div id="modal-post-purchase" class="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-purple-500/40 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl text-center glow-purple relative">
+      <button onclick="closePostPurchaseModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white text-2xl font-bold transition-colors cursor-pointer">&times;</button>
+      <div class="w-16 h-16 rounded-2xl bg-emerald-500/20 text-emerald-400 text-3xl flex items-center justify-center mx-auto mb-4">
+        📬
+      </div>
+      <h3 class="text-xl sm:text-2xl font-black text-white mb-2" data-i18n="post_purchase_title">¡Pago Completado con Éxito!</h3>
+      <p class="text-sm text-slate-300 mb-6 leading-relaxed" data-i18n="post_purchase_desc">
+        Hemos enviado tu <strong>Clave de Licencia PRO</strong> y tu recibo oficial directamente a tu <strong>correo electrónico</strong>.
+      </p>
+      <div class="bg-slate-950/80 border border-slate-800 rounded-2xl p-4 text-xs text-left mb-6 space-y-2.5 text-slate-300">
+        <div class="flex items-start gap-2.5">
+          <span class="text-purple-400 font-bold">1.</span>
+          <span data-i18n="post_step_1">Abre tu bandeja de entrada de correo (si no lo ves de inmediato, revisa tu carpeta de <em>Spam o Correo no deseado</em>).</span>
+        </div>
+        <div class="flex items-start gap-2.5">
+          <span class="text-purple-400 font-bold">2.</span>
+          <span data-i18n="post_step_2">Copia tu <strong>Clave de Licencia</strong> que aparece en el correo de CrisDL Software / Lemon Squeezy.</span>
+        </div>
+        <div class="flex items-start gap-2.5">
+          <span class="text-purple-400 font-bold">3.</span>
+          <span data-i18n="post_step_3">Abre tu aplicación <strong>Battery Alarm</strong> en Windows, haz clic en <strong>Activar PRO</strong>, pega tu clave y ¡listo!</span>
+        </div>
+      </div>
+      <button onclick="closePostPurchaseModal()" class="w-full py-3.5 rounded-xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-lg cursor-pointer transition-all" data-i18n="post_purchase_btn">
+        ¡Entendido! Ir a revisar mi correo
+      </button>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
   <!-- MODAL: RECUPERACIÓN DE CLAVE                                    -->
   <!-- ============================================================== -->
   <div id="modal-lookup" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md hidden flex items-center justify-center p-4">
@@ -718,7 +756,14 @@
         lookup_modal_subtitle: "Introduce el correo electrónico con el que adquiriste tu licencia.",
         lookup_modal_label: "Correo Electrónico",
         lookup_modal_btn: "Consultar mi Clave",
-        lookup_modal_found: "Tu clave registrada:"
+        lookup_modal_found: "Tu clave registrada:",
+        hero_email_notice: "<strong>¿Cómo recibes tu clave?</strong> Se muestra al pagar y <strong>se envía al instante a tu correo electrónico</strong> (revisa también tu carpeta de Spam / Correo no deseado).",
+        post_purchase_title: "¡Pago Completado con Éxito!",
+        post_purchase_desc: "Hemos enviado tu <strong>Clave de Licencia PRO</strong> y tu recibo oficial directamente a tu <strong>correo electrónico</strong>.",
+        post_step_1: "Abre tu bandeja de entrada de correo (si no lo ves de inmediato, revisa tu carpeta de <em>Spam o Correo no deseado</em>).",
+        post_step_2: "Copia tu <strong>Clave de Licencia</strong> que aparece en el correo de CrisDL Software / Lemon Squeezy.",
+        post_step_3: "Abre tu aplicación <strong>Battery Alarm</strong> en Windows, haz clic en <strong>Activar PRO</strong>, pega tu clave y ¡listo!",
+        post_purchase_btn: "¡Entendido! Ir a revisar mi correo"
       },
       en: {
         top_banner_title: "⚡ Official PRO Activation Gateway • Lifetime License for only <strong>$6.99 USD</strong>",
@@ -821,7 +866,14 @@
         lookup_modal_subtitle: "Enter the email address used during purchase.",
         lookup_modal_label: "Email Address",
         lookup_modal_btn: "Find My Key",
-        lookup_modal_found: "Your registered key:"
+        lookup_modal_found: "Your registered key:",
+        hero_email_notice: "<strong>How do you receive your key?</strong> Displayed upon payment and <strong>instantly sent to your email</strong> (please also check your Spam / Junk folder).",
+        post_purchase_title: "Payment Successfully Completed!",
+        post_purchase_desc: "We have sent your <strong>PRO License Key</strong> and official receipt directly to your <strong>email address</strong>.",
+        post_step_1: "Open your email inbox (if not immediately visible, check your <em>Spam or Junk</em> folder).",
+        post_step_2: "Copy your <strong>License Key</strong> from the CrisDL Software / Lemon Squeezy email.",
+        post_step_3: "Open <strong>Battery Alarm</strong> on Windows, click <strong>Activate PRO</strong>, paste your key, and you're set!",
+        post_purchase_btn: "Got it! Go check my email"
       }
     };
 
@@ -866,10 +918,29 @@
     function openLookupModal() {
       document.getElementById('lookup-result').classList.add('hidden');
       document.getElementById('modal-lookup').classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
     }
 
     function closeLookupModal() {
       document.getElementById('modal-lookup').classList.add('hidden');
+      document.body.style.overflow = '';
+    }
+
+    // Post-Purchase Modal
+    function openPostPurchaseModal() {
+      const m = document.getElementById('modal-post-purchase');
+      if (m) {
+        m.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    function closePostPurchaseModal() {
+      const m = document.getElementById('modal-post-purchase');
+      if (m) {
+        m.classList.add('hidden');
+        document.body.style.overflow = '';
+      }
     }
 
     // -------------------------------------------------------------
@@ -969,12 +1040,28 @@
       if (window.createLemonSqueezy) {
         window.createLemonSqueezy();
       }
+      if (window.LemonSqueezy && window.LemonSqueezy.Setup) {
+        window.LemonSqueezy.Setup({
+          eventHandler: (event) => {
+            if (event && (event.event === 'Checkout.Success' || event.event === 'Order.Created')) {
+              openPostPurchaseModal();
+            }
+          }
+        });
+      }
+      if (window.location.search.includes('success') || window.location.hash === '#success') {
+        openPostPurchaseModal();
+      }
       checkUrlForCheckout();
     });
-    window.addEventListener('hashchange', checkUrlForCheckout);
+    window.addEventListener('hashchange', () => {
+      if (window.location.hash === '#success') openPostPurchaseModal();
+      checkUrlForCheckout();
+    });
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         closeLookupModal();
+        closePostPurchaseModal();
       }
     });
   </script>
