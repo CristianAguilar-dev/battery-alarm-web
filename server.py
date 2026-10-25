@@ -128,7 +128,7 @@ def api_webhook():
         order_id = f"#{order_num}"
         customer = attrs.get("user_name") or "Cliente Lemon Squeezy"
         email = attrs.get("user_email") or "cliente@lemonsqueezy.com"
-        amount = attrs.get("total_formatted") or "$6.99 USD"
+        amount = attrs.get("total_formatted") or "$80.000 COP / $19.99 USD"
         status = attrs.get("status_formatted") or ("Pagado" if attrs.get("status") == "paid" else "Completado")
         raw_date = attrs.get("created_at")
         
@@ -209,7 +209,7 @@ def api_sync_lemon():
 
             customer = attrs.get("user_name") or "Cliente Oficial"
             email = attrs.get("user_email") or "cliente@gmail.com"
-            amount = attrs.get("total_formatted") or "$6.99 USD"
+            amount = attrs.get("total_formatted") or "$80.000 COP / $19.99 USD"
             status = attrs.get("status_formatted") or "Pagado"
             raw_date = attrs.get("created_at")
 
